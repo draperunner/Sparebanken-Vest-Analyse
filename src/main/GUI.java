@@ -18,6 +18,8 @@ import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.layout.VBox;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
+import main.utils.DateUtils;
+import main.utils.FileUtils;
 
 import java.io.File;
 import java.io.IOException;
@@ -98,6 +100,7 @@ public class GUI extends Application {
     @FXML
     public void startAnalysis() {
 
+        // No filepath is set
         String filePath = fileTextField.getText();
         if (filePath.isEmpty()) {
             statusLabel.setText("Inga fil er vald.");
@@ -105,13 +108,29 @@ public class GUI extends Application {
         }
 
         File file = new File(filePath);
+
+        // File is not readable, and it is not possible to set it to readable.
+        if (!file.canRead() && !file.setReadable(true)) {
+            statusLabel.setText("Fila kan ikkje lesast.");
+            return;
+        }
+
+        // Analyze!
         try {
             statusLabel.setText("Analyserer " + file.getName());
             analysis = new Analysis(file);
-        } catch (Exception e) {
+        }
+        catch (Exception e) {
             statusLabel.setText("Inga gyldig fil er vald. Ver venleg og vel ei .csv- eller .txt-fil.");
             e.printStackTrace();
         }
+
+        // If there are no transactions
+        if (analysis.getTransactions().isEmpty()) {
+            statusLabel.setText("Det ser ut som at fila er tom. Sjå til at ho er på teiknsettet UTF-8, windows-1252 eller ISO-8859-1.");
+            return;
+        }
+
         updateStatus();
         // Initialize and fill tables and charts with data
         initOverviewTable();
@@ -182,7 +201,7 @@ public class GUI extends Application {
         archiveReferenceColumn.setCellValueFactory(new PropertyValueFactory<>("archiveReference"));
         offsetAccountColumn.setCellValueFactory(new PropertyValueFactory<>("offsetAccount"));
         valueColumn.setCellValueFactory(new PropertyValueFactory<>("value"));
-        analysis.transactions.stream().forEach(transaction -> transactions.add(new TransactionTableRow(transaction)));
+        analysis.getTransactions().stream().forEach(transaction -> transactions.add(new TransactionTableRow(transaction)));
         transactionTable.setItems(transactions);
     }
 
@@ -329,7 +348,7 @@ public class GUI extends Application {
     }
 
     void updateStatus() {
-        int numberOfTransactions = analysis.transactions.size();
+        int numberOfTransactions = analysis.getTransactions().size();
         LocalDate startDate = analysis.getStartDate();
         LocalDate endDate = analysis.getEndDate();
         long days = DateUtils.getDaysBetween(startDate, endDate);

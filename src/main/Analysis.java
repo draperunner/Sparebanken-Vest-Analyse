@@ -1,5 +1,11 @@
 package main;
 
+import main.utils.DateUtils;
+import main.utils.FileUtils;
+import main.utils.ListUtils;
+import main.utils.NumberUtils;
+
+import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.math.BigDecimal;
@@ -19,22 +25,24 @@ public class Analysis {
     private List<String> groceryPlaces = Arrays.asList("REMA", "ICA", "BUNNPRIS", "SIT KAFE", "SIT STORKIOSK", "SESAM",
             "MENY", "RIMI", "SZECHUAN AS", "SERVERINGSGJENG", "NARVESEN", "JOKER");
 
-    List<Transaction> transactions = new ArrayList<>();
+    private List<Transaction> transactions = new ArrayList<>();
     private List<Post> posts = new ArrayList<>();
 
     /**
      *
      * @param file: The file of transactions to load
      *
-     * Scans the given file and fills the transa
+     * Scans the given file and fills the transactions list
      */
     public Analysis(File file) {
 
         // Instantiate scanner
         Scanner fileScanner;
+        String encoding = FileUtils.guessEncoding(file);
         try {
-            fileScanner = new Scanner(file);
-        } catch (FileNotFoundException e) {
+            fileScanner = new Scanner(file, encoding);
+        }
+        catch (FileNotFoundException e) {
             e.printStackTrace();
             return;
         }
@@ -42,6 +50,7 @@ public class Analysis {
         // Ignore first line which only contains headers
         if (fileScanner.hasNextLine()) {
             fileScanner.nextLine();
+            System.out.println(encoding);
         }
 
         // Fill transactions list
@@ -75,31 +84,32 @@ public class Analysis {
                 transaction.setValue(new BigDecimal(parts[parts.length - 3].replace(',', '.')));
                 transaction.setArchiveReference(parts[parts.length - 2]);
                 transaction.setOffsetAccount(parts[parts.length - 1]);
-            }
-            else {
+            } else {
                 transaction.setValue(new BigDecimal(parts[parts.length - 2].replace(',', '.')));
                 transaction.setArchiveReference(parts[parts.length - 1]);
             }
-
             transactions.add(transaction);
         }
+        definePosts();
+    }
 
-        /**
-         *
-         * DEFINE POSTS
-         *
-         * Posts defined under will automatically be added to tables and charts
-         *
-         */
-
+    /**
+     *
+     * DEFINE POSTS
+     *
+     * Posts defined under will automatically be added to tables and charts
+     *
+    */
+    private void definePosts() {
         // Balance
         Post balance = new Post("balance", "Balanse", Post.Type.OTHER, transactions, t -> t.stream()
-            .collect(Collectors.toList())
-        );
+            .collect(Collectors.toList()));
         PostOperator medianOperator = transactions1 -> {
             List<YearMonth> months = getPeriodInMonths();
             List<BigDecimal> monthlyBalances = months.stream().map(m -> {
-                List<Transaction> transThatMonth = transactions1.stream().filter(t -> m.equals(t.getYearMonthOfBookDate())).collect(Collectors.toList());
+                List<Transaction> transThatMonth = transactions1.stream()
+                    .filter(t -> m.equals(t.getYearMonthOfBookDate()))
+                    .collect(Collectors.toList());
                 return balance.getTotal(transThatMonth);
             }).collect(Collectors.toList());
             return ListUtils.getMedian(monthlyBalances);
@@ -168,6 +178,10 @@ public class Analysis {
 
     public List<Post> getPosts() {
         return posts;
+    }
+
+    public List<Transaction> getTransactions() {
+        return transactions;
     }
 
     public Post getPost(String name) {
