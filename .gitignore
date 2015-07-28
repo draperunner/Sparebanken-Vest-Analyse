@@ -2,3 +2,5 @@
 /out/
 *.iml
 *.MF
+*.csv
+*.txt
