@@ -23,10 +23,10 @@ public class Post {
         this.name = name;
         this.norwegianName = norwegianName;
         this.type = type;
+        showAsPositive = type == Type.EXPENSE;
         this.transactions = transactions;
         this.filterer = filterer;
         this.totalOperator = PostOperator.defaultTotalOperator;
-
         this.averageOperator = PostOperator.defaultAverageOperator;
         this.medianOperator = PostOperator.defaultMedianOperator;
     }

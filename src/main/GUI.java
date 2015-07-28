@@ -20,6 +20,7 @@ import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 import main.utils.DateUtils;
 import main.utils.FileUtils;
+import main.utils.NumberUtils;
 
 import java.io.File;
 import java.io.IOException;
@@ -269,60 +270,65 @@ public class GUI extends Application {
 
 
             if (i == months.size()) {
-                totalExpenses = analysis.getPost("expenses").getTotal();
-                totalIncome = analysis.getPost("income").getTotal();
-                expensesMap.keySet().stream().forEach(post -> expensesMap.put(post, post.getTotal()));
-                incomeMap.keySet().stream().forEach(post -> incomeMap.put(post, post.getTotal()));
+                totalExpenses = analysis.getPost("expenses").getTotal().abs();
+                totalIncome = analysis.getPost("income").getTotal().abs();
+                expensesMap.keySet().stream().forEach(post -> expensesMap.put(post, post.getTotal().abs()));
+                incomeMap.keySet().stream().forEach(post -> incomeMap.put(post, post.getTotal().abs()));
             }
             else if (i == months.size() + 1) {
-                totalExpenses = analysis.getPost("expenses").getAverage();
-                totalIncome = analysis.getPost("income").getAverage();
-                expensesMap.keySet().stream().forEach(post -> expensesMap.put(post, post.getAverage()));
-                incomeMap.keySet().stream().forEach(post -> incomeMap.put(post, post.getAverage()));
+                totalExpenses = analysis.getPost("expenses").getAverage().abs();
+                totalIncome = analysis.getPost("income").getAverage().abs();
+                expensesMap.keySet().stream().forEach(post -> expensesMap.put(post, post.getAverage().abs()));
+                incomeMap.keySet().stream().forEach(post -> incomeMap.put(post, post.getAverage().abs()));
             }
             else if (i == months.size() + 2) {
-                totalExpenses = analysis.getPost("expenses").getMedian();
-                totalIncome = analysis.getPost("income").getMedian();
-                expensesMap.keySet().stream().forEach(post -> expensesMap.put(post, post.getMedian()));
-                incomeMap.keySet().stream().forEach(post -> incomeMap.put(post, post.getMedian()));
+                totalExpenses = analysis.getPost("expenses").getMedian().abs();
+                totalIncome = analysis.getPost("income").getMedian().abs();
+                expensesMap.keySet().stream().forEach(post -> expensesMap.put(post, post.getMedian().abs()));
+                incomeMap.keySet().stream().forEach(post -> incomeMap.put(post, post.getMedian().abs()));
             }
             else {
                 YearMonth month = months.get(i);
-                totalExpenses = analysis.getMonthly("expenses", month);
-                totalIncome = analysis.getMonthly("income", month);
-                expensesMap.keySet().stream().forEach(post -> expensesMap.put(post, analysis.getMonthly(post.getName(), month)));
-                incomeMap.keySet().stream().forEach(post -> incomeMap.put(post, post.getMedian()));
+                totalExpenses = analysis.getMonthly("expenses", month).abs();
+                totalIncome = analysis.getMonthly("income", month).abs();
+                expensesMap.keySet().stream().forEach(post -> expensesMap.put(post, analysis.getMonthly(post.getName(), month).abs()));
+                incomeMap.keySet().stream().forEach(post -> incomeMap.put(post, analysis.getMonthly(post.getName(), month).abs()));
             }
 
             BigDecimal sumOfExpensesAndIncome = totalExpenses.add(totalIncome);
-            double expenseRatio = totalExpenses.divide(sumOfExpensesAndIncome, BigDecimal.ROUND_HALF_UP).doubleValue() * 100;
-            double incomeRatio = totalIncome.divide(sumOfExpensesAndIncome, BigDecimal.ROUND_HALF_UP).doubleValue() * 100;
+            double expenseRatio = NumberUtils.roundedDivision(totalExpenses, sumOfExpensesAndIncome) * 100;
+            double incomeRatio = NumberUtils.roundedDivision(totalIncome, sumOfExpensesAndIncome) * 100;
 
             HashMap<String, Double> expensesRatios = new HashMap<>();
             HashMap<String, Double> incomeRatios = new HashMap<>();
-            BigDecimal otherExpenses = totalExpenses;
-            BigDecimal otherIncome = totalIncome;
+            BigDecimal otherExpenses = totalExpenses.abs();
+            BigDecimal otherIncome = totalIncome.abs();
 
+            // Create pie slices for each expense except "total" and "other"
             for (Post post : expensesMap.keySet()) {
-                otherExpenses = otherExpenses.subtract(expensesMap.get(post));
-                double ratio = (totalExpenses.intValue() == 0) ? 100d : expensesMap.get(post).divide(totalExpenses, BigDecimal.ROUND_HALF_UP).doubleValue() * 100;
-                expensesRatios.put(post.getNorwegianName(), ratio);
+                otherExpenses = otherExpenses.subtract(expensesMap.get(post).abs());
+                double ratio = (totalExpenses.doubleValue() < 0.01d) ? 100d : NumberUtils.roundedDivision(expensesMap.get(post), totalExpenses) * 100;
+                String label = post.getNorwegianName() + " " + ratio + "%";
+                expensesRatios.put(label, ratio);
             }
+            // Create pie slices for each income except "total" and "other"
             for (Post post : incomeMap.keySet()) {
-                otherIncome = otherIncome.subtract(incomeMap.get(post));
-                double ratio = (totalIncome.intValue() == 0) ? 100d : incomeMap.get(post).divide(totalIncome, BigDecimal.ROUND_HALF_UP).doubleValue() * 100;
-                incomeRatios.put(post.getNorwegianName(), ratio);
+                otherIncome = otherIncome.subtract(incomeMap.get(post).abs());
+                double ratio = (totalIncome.doubleValue() < 0.01d) ? 100d : NumberUtils.roundedDivision(incomeMap.get(post), totalIncome) * 100;
+                String label = post.getNorwegianName() + " " + ratio + "%";
+                incomeRatios.put(label, ratio);
             }
 
-            double otherExpensesRatio = (totalExpenses.intValue() == 0) ? 100d : otherExpenses.divide(totalExpenses, BigDecimal.ROUND_HALF_UP).doubleValue() * 100;
-            double otherIncomeRatio = (totalIncome.intValue() == 0) ? 100d : otherIncome.divide(totalIncome, BigDecimal.ROUND_HALF_UP).doubleValue() * 100;
+            // Create pie slices for "other" income
+            double otherExpensesRatio = (totalExpenses.intValue() == 0) ? 100d : NumberUtils.roundedDivision(otherExpenses, totalExpenses) * 100;
+            double otherIncomeRatio = (totalIncome.intValue() == 0) ? 100d : NumberUtils.roundedDivision(otherIncome, totalIncome) * 100;
+            expensesRatios.put("Andre utgifter " + otherExpensesRatio + "%", otherExpensesRatio);
+            incomeRatios.put("Andre inntekter " + otherIncomeRatio + "%", otherIncomeRatio);
 
-            expensesRatios.put("Andre utgifter", otherExpensesRatio);
-            incomeRatios.put("Andre inntekter", otherIncomeRatio);
-
+            // Create pie slices for total income
             ObservableList<PieChart.Data> balanceData = FXCollections.observableArrayList(
-                new PieChart.Data("Utgifter", expenseRatio),
-                new PieChart.Data("Inntekter", incomeRatio));
+                new PieChart.Data("Utgifter " + expenseRatio + "%", expenseRatio),
+                new PieChart.Data("Inntekter " + incomeRatio + "%", incomeRatio));
             pieChartBalanceData.add(balanceData);
 
             ObservableList<PieChart.Data> expensesData = FXCollections.observableArrayList();

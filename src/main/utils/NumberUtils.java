@@ -15,20 +15,10 @@ public class NumberUtils {
         return value.intValue() < 0;
     }
 
-    // Valid format: xxxx.xx.xxxxx
-    public static boolean isValidAccountNumber(String accountNumber) {
-        String[] accountNumberParts = accountNumber.split("\\.");
-        if (accountNumberParts.length != 3) {
-            return false;
-        }
-        for (String part : accountNumberParts) {
-            if (!isInteger(part)) {
-                return false;
-            }
-        }
-        return (accountNumberParts[0].length() == 4
-                && accountNumberParts[1].length() == 2
-                && accountNumberParts[2].length() == 5);
+    public static double roundedDivision(BigDecimal dividend, BigDecimal divisor) {
+        BigDecimal result = dividend.divide(divisor, BigDecimal.ROUND_HALF_UP);
+        result = result.setScale(3, BigDecimal.ROUND_HALF_UP);
+        return result.doubleValue();
     }
 
     public static boolean isInteger(String s) {
@@ -51,5 +41,21 @@ public class NumberUtils {
             if(Character.digit(s.charAt(i),radix) < 0) return false;
         }
         return true;
+    }
+
+    // Valid format: xxxx.xx.xxxxx
+    public static boolean isValidAccountNumber(String accountNumber) {
+        String[] accountNumberParts = accountNumber.split("\\.");
+        if (accountNumberParts.length != 3) {
+            return false;
+        }
+        for (String part : accountNumberParts) {
+            if (!isInteger(part)) {
+                return false;
+            }
+        }
+        return (accountNumberParts[0].length() == 4
+                && accountNumberParts[1].length() == 2
+                && accountNumberParts[2].length() == 5);
     }
 }
