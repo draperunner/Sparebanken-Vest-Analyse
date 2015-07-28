@@ -22,8 +22,19 @@ import java.util.stream.Collectors;
  */
 public class Analysis {
 
-    private List<String> groceryPlaces = Arrays.asList("REMA", "ICA", "BUNNPRIS", "SIT KAFE", "SIT STORKIOSK", "SESAM",
-            "MENY", "RIMI", "SZECHUAN AS", "SERVERINGSGJENG", "NARVESEN", "JOKER");
+    private List<String> groceryPlaces = Arrays.asList(
+            "REMA", "ICA", "BUNNPRIS", "SIT KAFE", "SIT STORKIOSK", "MENY", "RIMI", "NARVESEN", "JOKER", "KIWI");
+    private List<String> restaurants = Arrays.asList(
+            "SZECHUAN AS", "SESAM", "ALPINO", "SMILE PIZZA", "LA FIESTA", "HARD ROCK CAFE", "UPPER CRUST");
+    private List<String> nightlifePlaces = Arrays.asList(
+            "CROWBAR", "GOSSIP", "DATTERA TIL HAGEN", "SERVERINGSGJENG", "CAFE 3B", "CAFE MONO", "RAMP PUB", "TRONDHEIM MIKRO",
+            "FIRE FINE", "GOOD OMENS");
+    private List<String> publicTransport = Arrays.asList(
+            "ATB", "RUTER", "BUSS", "FLYTOGET", "FLYBUSS", "NSB");
+    private List<String> streaming = Arrays.asList(
+            "SPOTIFY", "NETFLIX", "HBO");
+    private List<String> phoneBills = Arrays.asList(
+            "TELEREGNING");
 
     private List<Transaction> transactions = new ArrayList<>();
     private List<Post> posts = new ArrayList<>();
@@ -50,7 +61,6 @@ public class Analysis {
         // Ignore first line which only contains headers
         if (fileScanner.hasNextLine()) {
             fileScanner.nextLine();
-            System.out.println(encoding);
         }
 
         // Fill transactions list
@@ -133,10 +143,45 @@ public class Analysis {
 
         // Grocery expenses
         Post groceriesExpenses = new Post("groceriesExpenses", "Dagligvareutgifter", Post.Type.EXPENSE, transactions, t -> t.stream()
-            .filter(tr -> groceryPlaces.stream().anyMatch(substring -> tr.getDescription().contains(substring)))
+            .filter(tr -> groceryPlaces.stream().anyMatch(substring -> tr.getDescription().contains(substring.toUpperCase())))
             .collect(Collectors.toList()));
-        groceriesExpenses.setShowAsPositive(true);
         posts.add(groceriesExpenses);
+
+        // Restaurant expenses
+        Post restaurantExpenses = new Post("restaurantExpenses", "Restaurantar", Post.Type.EXPENSE, transactions, t -> t.stream()
+            .filter(tr -> restaurants.stream().anyMatch(substring -> tr.getDescription().contains(substring.toUpperCase())))
+            .collect(Collectors.toList()));
+        posts.add(restaurantExpenses);
+
+        // Nightlife expenses
+        Post nightlifeExpenses = new Post("nightlifeExpenses", "Nattliv", Post.Type.EXPENSE, transactions, t -> t.stream()
+            .filter(tr -> nightlifePlaces.stream().anyMatch(substring -> tr.getDescription().contains(substring.toUpperCase())))
+            .collect(Collectors.toList()));
+        posts.add(nightlifeExpenses);
+
+        // Public transport expenses
+        Post publicTransportExpenses = new Post("publicTransportExpenses", "Kollektivtrafikk", Post.Type.EXPENSE, transactions, t -> t.stream()
+            .filter(tr -> publicTransport.stream().anyMatch(substring -> tr.getDescription().contains(substring.toUpperCase())))
+            .collect(Collectors.toList()));
+        posts.add(publicTransportExpenses);
+
+        // Streaming expenses
+        Post streamingExpenses = new Post("streamingExpenses", "Streaming", Post.Type.EXPENSE, transactions, t -> t.stream()
+            .filter(tr -> streaming.stream().anyMatch(substring -> tr.getDescription().contains(substring.toUpperCase())))
+            .collect(Collectors.toList()));
+        posts.add(streamingExpenses);
+
+        // Phone bills
+        Post phoneBillExpenses = new Post("phoneBillExpenses", "Telefonrekningar", Post.Type.EXPENSE, transactions, t -> t.stream()
+            .filter(tr -> phoneBills.stream().anyMatch(substring -> tr.getDescription().contains(substring.toUpperCase())))
+            .collect(Collectors.toList()));
+        posts.add(phoneBillExpenses);
+
+        // Rent expenses
+        Post rentExpenses = new Post("rentExpenses", "Leige", Post.Type.EXPENSE, transactions, t -> t.stream()
+            .filter(tr -> tr.getDescription().toUpperCase().contains("LEIGE") || tr.getDescription().toUpperCase().contains("LEIE"))
+                .collect(Collectors.toList()));
+        posts.add(rentExpenses);
 
         // Salary
         Post salary = new Post("salary", "Løn", Post.Type.INCOME, transactions, t -> t.stream()
@@ -144,8 +189,8 @@ public class Analysis {
             .collect(Collectors.toList()));
         posts.add(salary);
 
-        // Stipend / loan
-        Post stipend = new Post("stipend", "Stipend/Lån", Post.Type.INCOME, transactions, t -> t.stream()
+        // Lånekassen
+        Post stipend = new Post("stipend", "Lånekassen", Post.Type.INCOME, transactions, t -> t.stream()
             .filter(tr -> tr.getDescription().contains("STATENS LÅNEKASSE"))
             .collect(Collectors.toList()));
         posts.add(stipend);
