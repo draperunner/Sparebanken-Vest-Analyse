@@ -1,4 +1,4 @@
-package main;
+package main.utils;
 
 import java.time.LocalDate;
 import java.time.YearMonth;
