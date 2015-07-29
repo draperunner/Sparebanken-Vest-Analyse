@@ -5,7 +5,6 @@ import main.utils.FileUtils;
 import main.utils.ListUtils;
 import main.utils.NumberUtils;
 
-import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.math.BigDecimal;
@@ -117,10 +116,8 @@ public class Analysis {
         PostOperator medianOperator = transactions1 -> {
             List<YearMonth> months = getPeriodInMonths();
             List<BigDecimal> monthlyBalances = months.stream().map(m -> {
-                List<Transaction> transThatMonth = transactions1.stream()
-                    .filter(t -> m.equals(t.getYearMonthOfBookDate()))
-                    .collect(Collectors.toList());
-                return balance.getTotal(transThatMonth);
+                List<Transaction> transactionsThatMonth = getTransactionsOfMonth(m);
+                return balance.getTotal(transactionsThatMonth);
             }).collect(Collectors.toList());
             return ListUtils.getMedian(monthlyBalances);
         };
@@ -227,6 +224,10 @@ public class Analysis {
 
     public List<Transaction> getTransactions() {
         return transactions;
+    }
+
+    public List<Transaction> getTransactionsOfMonth(YearMonth month) {
+        return transactions.stream().filter(t -> month.equals(t.getYearMonthOfBookDate())).collect(Collectors.toList());
     }
 
     public Post getPost(String name) {
