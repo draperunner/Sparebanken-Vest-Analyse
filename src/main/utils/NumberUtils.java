@@ -15,10 +15,15 @@ public class NumberUtils {
         return value.intValue() < 0;
     }
 
-    public static double roundedDivision(BigDecimal dividend, BigDecimal divisor) {
-        BigDecimal result = dividend.divide(divisor, BigDecimal.ROUND_HALF_UP);
-        result = result.setScale(3, BigDecimal.ROUND_HALF_UP);
-        return result.doubleValue();
+    public static BigDecimal roundedDivision(BigDecimal dividend, BigDecimal divisor) {
+        return dividend.divide(divisor, 2, BigDecimal.ROUND_HALF_EVEN);
+    }
+
+    public static BigDecimal roundedDivision(BigDecimal dividend, BigDecimal divisor, BigDecimal resultIfDivisorIsZero) {
+        if (divisor.equals(BigDecimal.ZERO)) {
+            return resultIfDivisorIsZero;
+        }
+        return roundedDivision(dividend, divisor);
     }
 
     public static boolean isInteger(String s) {
