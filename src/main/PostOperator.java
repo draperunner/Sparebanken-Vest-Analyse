@@ -1,6 +1,7 @@
 package main;
 
 import main.utils.ListUtils;
+
 import java.math.BigDecimal;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -13,7 +14,7 @@ public interface PostOperator {
     PostOperator defaultTotalOperator = t -> t.stream()
         .map(Transaction::getValue)
         .reduce(BigDecimal::add)
-        .orElse(new BigDecimal(0));
+        .orElse(BigDecimal.ZERO);
 
     PostOperator defaultAverageOperator = t -> ListUtils.getAverage(t.stream()
         .map(Transaction::getValue)

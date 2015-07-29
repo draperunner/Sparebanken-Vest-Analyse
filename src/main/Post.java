@@ -94,6 +94,7 @@ public class Post {
     public BigDecimal getAverage() {
         return getAverage(filter(transactions));
     }
+
     public BigDecimal getAverage(List<Transaction> transactions) {
         return averageOperator.calculate(filter(transactions));
     }
