@@ -15,6 +15,23 @@ Programmet viser dette i form av både tabellar, linje- og kakediagram.
 8. Trykk "Start analyse".
 
 ## Korleis fungerer det?
-Dagligvareutgifter vert henta frå alle transaksjonar som inneheld eitt eller fleire av desse orda: REMA, ICA, BUNNPRIS, SIT KAFE, SIT STORKIOSK, MENY, RIMI, NARVESEN, JOKER.  
-Løn vert henta frå alle transaksjonar med tekstkode "LØNN".
+Dagligvareutgifter vert henta frå alle transaksjonar som inneheld eitt eller fleire av desse orda:  
+REMA, ICA, BUNNPRIS, SIT KAFE, SIT STORKIOSK, MENY, RIMI, NARVESEN, JOKER, KIWI    
+
+Restaurantar vert henta frå alle transaksjonar som inneheld eitt eller fleire av desse orda:  
+SZECHUAN AS, SESAM, ALPINO, SMILE PIZZA, LA FIESTA, HARD ROCK CAFE, UPPER CRUST    
+
+Nattliv vert henta frå alle transaksjonar som inneheld eitt eller fleire av desse orda:  
+CROWBAR, GOSSIP, DATTERA TIL HAGEN, SERVERINGSGJENG, CAFE 3B, CAFE MONO, RAMP PUB, TRONDHEIM MIKRO, FIRE FINE, GOOD OMENS    
+
+Kollektivtrafikk vert henta frå alle transaksjonar som inneheld eitt eller fleire av desse orda:  
+ATB, RUTER, BUSS, FLYTOGET, FLYBUSS, NSB    
+
+Streaming vert henta frå alle transaksjonar som inneheld eitt eller fleire av desse orda:  
+SPOTIFY, NETFLIX, HBO    
+
+Telefonrekningar vert henta frå alle transaksjonar som inneheld eitt eller fleire av desse orda:  
+TELEREGNING    
+
+Løn vert henta frå alle transaksjonar med tekstkode "LØNN".  
 Stipend/Lån vert henta frå alle transaksjonar med skildring som inneheld "STATENS LÅNEKASSE".
