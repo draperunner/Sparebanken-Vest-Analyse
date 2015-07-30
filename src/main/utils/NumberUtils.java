@@ -16,7 +16,7 @@ public class NumberUtils {
     }
 
     public static BigDecimal roundedDivision(BigDecimal dividend, BigDecimal divisor) {
-        return dividend.divide(divisor, 2, BigDecimal.ROUND_HALF_EVEN);
+        return dividend.divide(divisor, 4, BigDecimal.ROUND_HALF_EVEN);
     }
 
     public static BigDecimal roundedDivision(BigDecimal dividend, BigDecimal divisor, BigDecimal resultIfDivisorIsZero) {
@@ -27,7 +27,7 @@ public class NumberUtils {
     }
 
     public static boolean isInteger(String s) {
-        return isInteger(s,10);
+        return isInteger(s, 10);
     }
 
     public static boolean isInteger(String s, int radix) {
@@ -43,24 +43,8 @@ public class NumberUtils {
                     continue;
                 }
             }
-            if(Character.digit(s.charAt(i),radix) < 0) return false;
+            if (Character.digit(s.charAt(i),radix) < 0) return false;
         }
         return true;
-    }
-
-    // Valid format: xxxx.xx.xxxxx
-    public static boolean isValidAccountNumber(String accountNumber) {
-        String[] accountNumberParts = accountNumber.split("\\.");
-        if (accountNumberParts.length != 3) {
-            return false;
-        }
-        for (String part : accountNumberParts) {
-            if (!isInteger(part)) {
-                return false;
-            }
-        }
-        return (accountNumberParts[0].length() == 4
-                && accountNumberParts[1].length() == 2
-                && accountNumberParts[2].length() == 5);
     }
 }

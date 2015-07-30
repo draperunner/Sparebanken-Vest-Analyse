@@ -293,8 +293,8 @@ public class GUI extends Application {
             }
             // Median
             else if (i == months.size() + 2) {
-                totalExpenses = analysis.getPost("expenses").getMedian().abs();
-                totalIncome = analysis.getPost("income").getMedian().abs();
+                totalExpenses = BigDecimal.ZERO;
+                totalIncome = BigDecimal.ZERO;
                 for (Post post : expensesMap.keySet()) {
                     totalExpenses = totalExpenses.add(analysis.getPeriodInMonths().stream()
                         .map(month -> post.getMedian(analysis.getTransactionsOfMonth(month)).abs())
@@ -318,10 +318,13 @@ public class GUI extends Application {
             }
 
             BigDecimal hundred = new BigDecimal(100);
+            int scale = 1;
 
             BigDecimal sumOfExpensesAndIncome = totalExpenses.add(totalIncome);
-            BigDecimal expenseRatio = NumberUtils.roundedDivision(totalExpenses, sumOfExpensesAndIncome).multiply(hundred);
-            BigDecimal incomeRatio = NumberUtils.roundedDivision(totalIncome, sumOfExpensesAndIncome).multiply(hundred);
+            BigDecimal expenseRatio = NumberUtils.roundedDivision(totalExpenses, sumOfExpensesAndIncome)
+                .multiply(hundred).setScale(scale, BigDecimal.ROUND_HALF_UP);
+            BigDecimal incomeRatio = NumberUtils.roundedDivision(totalIncome, sumOfExpensesAndIncome)
+                .multiply(hundred).setScale(scale, BigDecimal.ROUND_HALF_UP);
 
             HashMap<String, BigDecimal> expensesRatios = new HashMap<>();
             HashMap<String, BigDecimal> incomeRatios = new HashMap<>();
@@ -333,7 +336,7 @@ public class GUI extends Application {
                 BigDecimal value = expensesMap.get(post).abs();
                 otherExpenses = otherExpenses.subtract(value);
                 BigDecimal ratio = NumberUtils.roundedDivision(value, totalExpenses, BigDecimal.ONE);
-                ratio = ratio.multiply(hundred);
+                ratio = ratio.multiply(hundred).setScale(scale, BigDecimal.ROUND_HALF_UP);
                 String label = post.getNorwegianName() + " " + ratio.toPlainString() + "%";
                 expensesRatios.put(label, ratio);
             }
@@ -342,16 +345,16 @@ public class GUI extends Application {
                 BigDecimal value = incomeMap.get(post).abs();
                 otherIncome = otherIncome.subtract(value);
                 BigDecimal ratio = NumberUtils.roundedDivision(value, totalIncome, BigDecimal.ONE);
-                ratio = ratio.multiply(hundred);
+                ratio = ratio.multiply(hundred).setScale(scale, BigDecimal.ROUND_HALF_UP);
                 String label = post.getNorwegianName() + " " + ratio.toPlainString() + "%";
                 incomeRatios.put(label, ratio);
             }
 
             // Create pie slices for "other" expenses and income
             BigDecimal otherExpensesRatio = NumberUtils.roundedDivision(otherExpenses, totalExpenses, BigDecimal.ONE);
-            otherExpensesRatio = otherExpensesRatio.multiply(hundred);
+            otherExpensesRatio = otherExpensesRatio.multiply(hundred).setScale(scale, BigDecimal.ROUND_HALF_UP);
             BigDecimal otherIncomeRatio = NumberUtils.roundedDivision(otherIncome, totalIncome, BigDecimal.ONE);
-            otherIncomeRatio = otherIncomeRatio.multiply(hundred);
+            otherIncomeRatio = otherIncomeRatio.multiply(hundred).setScale(scale, BigDecimal.ROUND_HALF_UP);
             expensesRatios.put("Andre utgifter " + otherExpensesRatio + "%", otherExpensesRatio);
             incomeRatios.put("Andre inntekter " + otherIncomeRatio + "%", otherIncomeRatio);
 
