@@ -3,6 +3,7 @@ package main;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.YearMonth;
+import java.util.Objects;
 
 /**
  * Created by mats on 21.07.2015.
@@ -90,5 +91,22 @@ public class Transaction {
         stringBuilder.append(" Offset Account: ");
         stringBuilder.append(offsetAccount);
         return stringBuilder.toString();
+    }
+
+    public boolean equals(Object object) {
+        if (object == this) {
+            return true;
+        }
+        if (!object.getClass().getSimpleName().equals("Transaction")) {
+            return false;
+        }
+        Transaction transaction = (Transaction) object;
+        return object.getClass().getSimpleName().equals("Transaction")
+            && this.bookDate.equals((transaction).bookDate)
+            && this.interestDate.equals(transaction.interestDate)
+            && this.textCode.equals(transaction.textCode)
+            && this.description.equals(transaction.description)
+            && this.archiveReference.equals(((Transaction) object).archiveReference)
+            && this.value.equals(((Transaction) object).value);
     }
 }

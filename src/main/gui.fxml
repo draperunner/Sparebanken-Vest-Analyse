@@ -1,19 +1,21 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
+<?import java.lang.*?>
 <?import javafx.geometry.*?>
 <?import javafx.scene.chart.*?>
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
-<VBox maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="400.0" prefWidth="600.0" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="main.GUI">
+
+<VBox maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="600.0" prefWidth="1200.0" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="main.GUI">
    <children>
-      <Label text="Ver venleg og finn transaksjonsfila di (.csv):">
+      <Label text="Ver venleg og finn transaksjonsfilene di (.csv):">
          <VBox.margin>
             <Insets left="5.0" right="5.0" />
          </VBox.margin></Label>
       <HBox prefHeight="0.0" prefWidth="600.0">
          <children>
             <TextField fx:id="fileTextField" HBox.hgrow="ALWAYS" />
-            <Button fx:id="browseButton" mnemonicParsing="false" onAction="#browse" text="Finn fil" />
+            <Button fx:id="browseButton" mnemonicParsing="false" onAction="#browse" text="Finn filer" />
             <Button fx:id="startButton" mnemonicParsing="false" onAction="#startAnalysis" text="Start analyse" />
          </children>
          <VBox.margin>

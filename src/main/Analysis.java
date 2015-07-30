@@ -37,13 +37,17 @@ public class Analysis {
     private List<Transaction> transactions = new ArrayList<>();
     private List<Post> posts = new ArrayList<>();
 
+    public Analysis() {
+        definePosts();
+    }
+
     /**
      *
      * @param file: The file of transactions to load
      *
      * Scans the given file and fills the transactions list
      */
-    public Analysis(File file) {
+    public void analyze(File file) {
 
         // Instantiate scanner
         Scanner fileScanner;
@@ -96,9 +100,10 @@ public class Analysis {
                 transaction.setValue(new BigDecimal(parts[parts.length - 2].replace(',', '.')));
                 transaction.setArchiveReference(parts[parts.length - 1]);
             }
-            transactions.add(transaction);
+            if (!transactions.contains(transaction)) {
+                transactions.add(transaction);
+            }
         }
-        definePosts();
     }
 
     /**

@@ -64,6 +64,8 @@ public class GUI extends Application {
 
     private List<ObservableList<PieChart.Data>> pieChartBalanceData, pieChartExpensesData, pieChartIncomeData;
 
+    private List<File> selectedFiles = new ArrayList<>();
+
     public static void main(String[] args) {
         launch(GUI.class);
     }
@@ -88,46 +90,62 @@ public class GUI extends Application {
         fileChooser.setTitle("Finn transaksjonsfil");
         fileChooser.getExtensionFilters().addAll(
                 new FileChooser.ExtensionFilter("csv", "*.csv"),
-                new FileChooser.ExtensionFilter("txt", "*.txt")
+                new FileChooser.ExtensionFilter("txt", "*.txt"),
+                new FileChooser.ExtensionFilter("Alle filer", "*.*")
         );
-        File file = fileChooser.showOpenDialog(stage);
-        if (file != null) {
-            fileTextField.setText(file.getAbsolutePath());
-            statusLabel.setText("");
+        selectedFiles = fileChooser.showOpenMultipleDialog(stage);
+        if (selectedFiles == null) {
+            return;
+        }
+        if (selectedFiles.size() == 1) {
+            fileTextField.setText(selectedFiles.get(0).getAbsolutePath());
+        }
+        else if (selectedFiles.size() > 1) {
+            fileTextField.setText(selectedFiles.stream().map(File::getName).reduce((a, b) -> a + ", " + b).get());
+        }
+        else if (selectedFiles.size() > 0) {
+            statusLabel.setText("Trykk 'Start analyse' for å starte.");
         }
     }
 
     @FXML
     public void startAnalysis() {
+        statusLabel.setText("Analyserer...");
 
-        // No filepath is set
-        String filePath = fileTextField.getText();
-        if (filePath.isEmpty()) {
-            statusLabel.setText("Inga fil er vald.");
-            return;
-        }
-
-        File file = new File(filePath);
-
-        // File is not readable, and it is not possible to set it to readable.
-        if (!file.canRead() && !file.setReadable(true)) {
-            statusLabel.setText("Fila kan ikkje lesast.");
-            return;
+        // If no files have been selected by FileChooser, see if the user has written a valid path in the text field
+        if (selectedFiles.isEmpty()) {
+            String filePath = fileTextField.getText();
+            // No filepath is set
+            if (filePath.isEmpty()) {
+                statusLabel.setText("Inga fil er vald.");
+                return;
+            }
+            File file = new File(filePath);
+            // File is not readable, and it is not possible to set it to be readable.
+            if (!file.canRead() && !file.setReadable(true)) {
+                statusLabel.setText("Fila kan ikkje lesast.");
+                return;
+            }
+            selectedFiles.add(file);
         }
 
         // Analyze!
-        try {
-            statusLabel.setText("Analyserer " + file.getName());
-            analysis = new Analysis(file);
-        }
-        catch (Exception e) {
-            statusLabel.setText("Inga gyldig fil er vald. Ver venleg og vel ei .csv- eller .txt-fil.");
-            e.printStackTrace();
-        }
+        analysis = new Analysis();
+        selectedFiles.forEach(file -> {
+            String name = file.getName();
+            try {
+                analysis.analyze(file);
+            }
+            catch (Exception e) {
+                statusLabel.setText("Fila " + name + " er ikkje gyldig. Ver venleg og vel ei .csv- eller .txt-fil.");
+                e.printStackTrace();
+            }
+        });
 
         // If there are no transactions
         if (analysis.getTransactions().isEmpty()) {
-            statusLabel.setText("Det ser ut som at fila er tom. Sjå til at ho er på teiknsettet UTF-8, windows-1252 eller ISO-8859-1.");
+            statusLabel.setText("Det ser ut som at fila/filene er tom(me). " +
+                "Sjå til at ho/dei er på teiknsettet UTF-8, windows-1252 eller ISO-8859-1.");
             return;
         }
 
@@ -230,7 +248,9 @@ public class GUI extends Application {
         }));
 
         // Add the series to the chart
-        lineChart.getData().addAll(analysis.getPosts().stream().map(p -> seriesMap.get(p.getName())).collect(Collectors.toList()));
+        lineChart.getData().addAll(analysis.getPosts().stream()
+            .map(post -> seriesMap.get(post.getName()))
+            .collect(Collectors.toList()));
     }
 
     void initPieCharts() {
@@ -321,9 +341,9 @@ public class GUI extends Application {
             int scale = 1;
 
             BigDecimal sumOfExpensesAndIncome = totalExpenses.add(totalIncome);
-            BigDecimal expenseRatio = NumberUtils.roundedDivision(totalExpenses, sumOfExpensesAndIncome)
+            BigDecimal expenseRatio = NumberUtils.roundedDivision(totalExpenses, sumOfExpensesAndIncome, BigDecimal.ZERO)
                 .multiply(hundred).setScale(scale, BigDecimal.ROUND_HALF_UP);
-            BigDecimal incomeRatio = NumberUtils.roundedDivision(totalIncome, sumOfExpensesAndIncome)
+            BigDecimal incomeRatio = NumberUtils.roundedDivision(totalIncome, sumOfExpensesAndIncome, BigDecimal.ZERO)
                 .multiply(hundred).setScale(scale, BigDecimal.ROUND_HALF_UP);
 
             HashMap<String, BigDecimal> expensesRatios = new HashMap<>();
@@ -335,7 +355,7 @@ public class GUI extends Application {
             for (Post post : expensesMap.keySet()) {
                 BigDecimal value = expensesMap.get(post).abs();
                 otherExpenses = otherExpenses.subtract(value);
-                BigDecimal ratio = NumberUtils.roundedDivision(value, totalExpenses, BigDecimal.ONE);
+                BigDecimal ratio = NumberUtils.roundedDivision(value, totalExpenses, BigDecimal.ZERO);
                 ratio = ratio.multiply(hundred).setScale(scale, BigDecimal.ROUND_HALF_UP);
                 String label = post.getNorwegianName() + " " + ratio.toPlainString() + "%";
                 expensesRatios.put(label, ratio);
@@ -344,16 +364,16 @@ public class GUI extends Application {
             for (Post post : incomeMap.keySet()) {
                 BigDecimal value = incomeMap.get(post).abs();
                 otherIncome = otherIncome.subtract(value);
-                BigDecimal ratio = NumberUtils.roundedDivision(value, totalIncome, BigDecimal.ONE);
+                BigDecimal ratio = NumberUtils.roundedDivision(value, totalIncome, BigDecimal.ZERO);
                 ratio = ratio.multiply(hundred).setScale(scale, BigDecimal.ROUND_HALF_UP);
                 String label = post.getNorwegianName() + " " + ratio.toPlainString() + "%";
                 incomeRatios.put(label, ratio);
             }
 
             // Create pie slices for "other" expenses and income
-            BigDecimal otherExpensesRatio = NumberUtils.roundedDivision(otherExpenses, totalExpenses, BigDecimal.ONE);
+            BigDecimal otherExpensesRatio = NumberUtils.roundedDivision(otherExpenses, totalExpenses, BigDecimal.ZERO);
             otherExpensesRatio = otherExpensesRatio.multiply(hundred).setScale(scale, BigDecimal.ROUND_HALF_UP);
-            BigDecimal otherIncomeRatio = NumberUtils.roundedDivision(otherIncome, totalIncome, BigDecimal.ONE);
+            BigDecimal otherIncomeRatio = NumberUtils.roundedDivision(otherIncome, totalIncome, BigDecimal.ZERO);
             otherIncomeRatio = otherIncomeRatio.multiply(hundred).setScale(scale, BigDecimal.ROUND_HALF_UP);
             expensesRatios.put("Andre utgifter " + otherExpensesRatio + "%", otherExpensesRatio);
             incomeRatios.put("Andre inntekter " + otherIncomeRatio + "%", otherIncomeRatio);

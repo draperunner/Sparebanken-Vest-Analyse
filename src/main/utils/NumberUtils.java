@@ -15,12 +15,12 @@ public class NumberUtils {
         return value.intValue() < 0;
     }
 
-    public static BigDecimal roundedDivision(BigDecimal dividend, BigDecimal divisor) {
+    private static BigDecimal roundedDivision(BigDecimal dividend, BigDecimal divisor) {
         return dividend.divide(divisor, 4, BigDecimal.ROUND_HALF_EVEN);
     }
 
     public static BigDecimal roundedDivision(BigDecimal dividend, BigDecimal divisor, BigDecimal resultIfDivisorIsZero) {
-        if (divisor.equals(BigDecimal.ZERO)) {
+        if (divisor.compareTo(BigDecimal.ZERO) == 0) {
             return resultIfDivisorIsZero;
         }
         return roundedDivision(dividend, divisor);
