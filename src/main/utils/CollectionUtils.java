@@ -6,7 +6,7 @@ import java.util.List;
 /**
  * Created by mats on 26.07.2015.
  */
-public class ListUtils {
+public class CollectionUtils {
 
     public static BigDecimal getAverage(List<BigDecimal> numbers) {
         if (numbers.isEmpty()) {

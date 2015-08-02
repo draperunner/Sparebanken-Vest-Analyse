@@ -1,6 +1,6 @@
 package main;
 
-import main.utils.ListUtils;
+import main.utils.CollectionUtils;
 
 import java.math.BigDecimal;
 import java.util.List;
@@ -16,13 +16,13 @@ public interface PostOperator {
         .reduce(BigDecimal::add)
         .orElse(BigDecimal.ZERO);
 
-    PostOperator defaultAverageOperator = t -> ListUtils.getAverage(t.stream()
-        .map(Transaction::getValue)
-        .collect(Collectors.toList()));
+    PostOperator defaultAverageOperator = t -> CollectionUtils.getAverage(t.stream()
+            .map(Transaction::getValue)
+            .collect(Collectors.toList()));
 
-    PostOperator defaultMedianOperator = t -> ListUtils.getMedian(t.stream()
-        .map(Transaction::getValue)
-        .collect(Collectors.toList()));
+    PostOperator defaultMedianOperator = t -> CollectionUtils.getMedian(t.stream()
+            .map(Transaction::getValue)
+            .collect(Collectors.toList()));
 
     /**
      * @param transactions

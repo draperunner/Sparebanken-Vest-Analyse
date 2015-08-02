@@ -123,7 +123,7 @@ public class Analysis {
                 List<Transaction> transactionsThatMonth = getTransactionsOfMonth(m);
                 return balance.getTotal(transactionsThatMonth);
             }).collect(Collectors.toList());
-            return ListUtils.getMedian(monthlyBalances);
+            return CollectionUtils.getMedian(monthlyBalances);
         };
         balance.setMedianOperator(medianOperator);
         posts.add(balance);

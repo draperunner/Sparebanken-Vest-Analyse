@@ -48,13 +48,13 @@ public class GUI extends Application {
     @FXML private TableView<ObservableList<StringProperty>> overviewTable;
 
     @FXML private TableView<TransactionTableRow> transactionTable;
-    @FXML private TableColumn<MonthlyOverview, String> bookDateColumn;
-    @FXML private TableColumn<MonthlyOverview, String> interestDateColumn;
-    @FXML private TableColumn<MonthlyOverview, String> textCodeColumn;
-    @FXML private TableColumn<MonthlyOverview, String> descriptionColumn;
-    @FXML private TableColumn<MonthlyOverview, String> archiveReferenceColumn;
-    @FXML private TableColumn<MonthlyOverview, String> offsetAccountColumn;
-    @FXML private TableColumn<MonthlyOverview, String> valueColumn;
+    @FXML private TableColumn<String, String> bookDateColumn;
+    @FXML private TableColumn<String, String> interestDateColumn;
+    @FXML private TableColumn<String, String> textCodeColumn;
+    @FXML private TableColumn<String, String> descriptionColumn;
+    @FXML private TableColumn<String, String> archiveReferenceColumn;
+    @FXML private TableColumn<String, String> offsetAccountColumn;
+    @FXML private TableColumn<String, String> valueColumn;
 
     @FXML private LineChart<String, Double> lineChart;
     @FXML private Slider pieChartSlider;
@@ -62,9 +62,9 @@ public class GUI extends Application {
     @FXML private PieChart pieChartExpenses;
     @FXML private PieChart pieChartIncome;
 
-    private List<ObservableList<PieChart.Data>> pieChartBalanceData, pieChartExpensesData, pieChartIncomeData;
-
+    private List<List<PieChart.Data>> pieChartBalanceData, pieChartExpensesData, pieChartIncomeData;
     private List<File> selectedFiles = new ArrayList<>();
+    private int previousSliderValue = 0;
 
     public static void main(String[] args) {
         launch(GUI.class);
@@ -249,8 +249,8 @@ public class GUI extends Application {
 
         // Add the series to the chart
         lineChart.getData().addAll(analysis.getPosts().stream()
-            .map(post -> seriesMap.get(post.getName()))
-            .collect(Collectors.toList()));
+                .map(post -> seriesMap.get(post.getName()))
+                .collect(Collectors.toList()));
     }
 
     void initPieCharts() {
@@ -379,35 +379,52 @@ public class GUI extends Application {
             incomeRatios.put("Andre inntekter " + otherIncomeRatio + "%", otherIncomeRatio);
 
             // Create pie slices for total expenses and income (Leftmost pie chart)
-            ObservableList<PieChart.Data> balanceData = FXCollections.observableArrayList(
-                new PieChart.Data("Utgifter " + expenseRatio.toPlainString() + "%", expenseRatio.doubleValue()),
-                new PieChart.Data("Inntekter " + incomeRatio.toPlainString() + "%", incomeRatio.doubleValue()));
+            List<PieChart.Data> balanceData = new ArrayList<>();
+            balanceData.add(new PieChart.Data("Utgifter " + expenseRatio.toPlainString() + "%", expenseRatio.doubleValue()));
+            balanceData.add(new PieChart.Data("Inntekter " + incomeRatio.toPlainString() + "%", incomeRatio.doubleValue()));
             pieChartBalanceData.add(balanceData);
 
             // Create pie slices for expenses (Middle pie chart)
-            ObservableList<PieChart.Data> expensesData = FXCollections.observableArrayList();
+            List<PieChart.Data> expensesData = new ArrayList<>(expensesRatios.keySet().size());
             expensesRatios.keySet().stream()
                 .forEach(post -> expensesData.add(new PieChart.Data(post, expensesRatios.get(post).doubleValue())));
             pieChartExpensesData.add(expensesData);
 
             // Create pie slices for income (Rightmost pie chart)
-            ObservableList<PieChart.Data> incomeData = FXCollections.observableArrayList();
+            List<PieChart.Data> incomeData = new ArrayList<>(incomeRatios.keySet().size());
             incomeRatios.keySet().stream()
                 .forEach(post -> incomeData.add(new PieChart.Data(post, incomeRatios.get(post).doubleValue())));
             pieChartIncomeData.add(incomeData);
         }
-        updatePieCharts();
+
+        pieChartBalance.getData().setAll(pieChartBalanceData.get(0));
+        pieChartExpenses.getData().setAll(pieChartExpensesData.get(0));
+        pieChartIncome.getData().setAll(pieChartIncomeData.get(0));
+
+        updatePieCharts(0d);
         // Set title and data for pie charts when slider value changes
-        pieChartSlider.valueProperty().addListener((observable, oldValue, newValue) -> updatePieCharts());
+        pieChartSlider.valueProperty().addListener((observable, oldValue, newValue) -> updatePieCharts(newValue));
     }
 
-    void updatePieCharts() {
-        pieChartBalance.setTitle("Balanse " + pieChartSlider.getLabelFormatter().toString(pieChartSlider.getValue()));
-        pieChartBalance.setData(pieChartBalanceData.get((int) pieChartSlider.getValue()));
-        pieChartExpenses.setTitle("Utgifter " + pieChartSlider.getLabelFormatter().toString(pieChartSlider.getValue()));
-        pieChartExpenses.setData(pieChartExpensesData.get((int) pieChartSlider.getValue()));
-        pieChartIncome.setTitle("Inntekter " + pieChartSlider.getLabelFormatter().toString(pieChartSlider.getValue()));
-        pieChartIncome.setData(pieChartIncomeData.get((int) pieChartSlider.getValue()));
+    void updatePieCharts(Number newValue) {
+        double value = newValue.doubleValue();
+        int intValue = newValue.intValue();
+        if (previousSliderValue == intValue || pieChartSlider.isValueChanging()) {
+            return;
+        }
+        previousSliderValue = intValue;
+
+        pieChartBalance.setTitle("Balanse " + pieChartSlider.getLabelFormatter().toString(value));
+        pieChartBalance.getData().clear();
+        pieChartBalance.getData().addAll(pieChartBalanceData.get(intValue));
+
+        pieChartExpenses.setTitle("Utgifter " + pieChartSlider.getLabelFormatter().toString(value));
+        pieChartExpenses.getData().clear();
+        pieChartExpenses.getData().addAll(pieChartExpensesData.get(intValue));
+
+        pieChartIncome.setTitle("Inntekter " + pieChartSlider.getLabelFormatter().toString(value));
+        pieChartIncome.getData().clear();
+        pieChartIncome.getData().addAll(pieChartIncomeData.get(intValue));
     }
 
     void updateStatus() {
